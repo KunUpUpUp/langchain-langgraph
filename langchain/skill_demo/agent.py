@@ -115,4 +115,6 @@ def run_agent(user_input: str):
 
 
 if __name__ == "__main__":
-    run_agent("帮我审查 test_code.py 这个文件的代码质量")
+    # run_agent("帮我审查 test_code.py 这个文件的代码质量")
+    # run_agent("帮我审查 test_code2.py 这个文件的代码质量")
+    run_agent("帮我解释 test_code.py 这个文件的代码")
