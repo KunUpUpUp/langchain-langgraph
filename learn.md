@@ -11,3 +11,10 @@
 因为流式响应或者需要多次往客户端发送信息，所以使用SSE
 
 ## Skill
+看下来就是写多个prompt模板，然后给LLM name、description和path（注入system prompt），LLM根据用户提问选择合适的skill模板，这个做法是为了更贴合用户的问题，减少上下文并提高上下文关联度
+
+## Planning  → 决定做什么、怎么拆
+## Memory    → 记住做过什么
+## RAG       → 补充知识
+## Guardrails → 限制不能做什么
+## Evaluation → 做得好不好
