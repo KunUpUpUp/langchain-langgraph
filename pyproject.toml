@@ -8,5 +8,7 @@ dependencies = [
     "langchain>=1.2.13",
     "langchain-openai>=0.3.0",
     "mcp>=1.26.0",
+    "numpy>=2.4.4",
     "python-dotenv>=1.0.0",
+    "sentence-transformers>=4.1.0",
 ]

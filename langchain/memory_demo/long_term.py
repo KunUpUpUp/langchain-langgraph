@@ -22,15 +22,15 @@ def save_memory(memory: dict):
 
 
 def extract_and_save(user_msg: str, assistant_msg: str, memory: dict):
-    """从对话中提取值得长期记住的信息"""
+    """只从用户原话中提取信息，忽略助手回复（防止幻觉污染记忆）"""
     response = client.chat.completions.create(
         model="qwen-plus",
         messages=[
             {
                 "role": "system",
-                "content": '从对话中提取用户的关键信息（姓名、偏好、职业等），返回JSON数组，如 ["用户叫张三", "喜欢Python"]。没有则返回 []',
+                "content": '只从用户原话中提取用户明确说出的事实信息（姓名、偏好、职业等）。\n严格规则：\n1. 只提取用户亲口说的，不要推测或联想\n2. 忽略助手的回复内容\n3. 返回JSON数组，如 ["用户叫张三", "喜欢Python"]\n4. 没有明确事实则返回 []',
             },
-            {"role": "user", "content": f"用户: {user_msg}\n助手: {assistant_msg}"},
+            {"role": "user", "content": f"用户原话: {user_msg}"},
         ],
     )
     try:
