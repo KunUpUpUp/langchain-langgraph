@@ -32,11 +32,21 @@ memory是面向个人的，会随着对话不断深入
 
 ## Guardrails → 限制不能做什么
 
++ Guardrails AI（guardrails-ai）— 最流行的，定义验证规则，自动校验 LLM 输入输出
 
++ NeMo Guardrails（NVIDIA）— 用 Colang 语言定义对话规则，适合复杂的对话安全控制
+
++ LangChain 自带的 — RunnableBranch 做路由，配合自定义检查函数
 
 ## Evaluation → 做得好不好
 
-用框架
++ Ragas — 专门评估 RAG 系统，评估检索质量、回答准确性、幻觉率等
+
++ DeepEval — 通用 LLM 评估，支持多种指标（忠实度、相关性、毒性等），类似 pytest 的写法
+
++ LangSmith（LangChain 官方）— 追踪、评估、监控一体化平台
+
++ Phoenix（Arize）— 可视化追踪和评估，开源
 
 ## 缓存
 
