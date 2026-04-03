@@ -1,17 +1,18 @@
 """
 完整 Agent 示例 - 集成 Tool + Memory + RAG + Guardrails
 
-用 LangGraph 的 create_react_agent 构建，
-不再手写循环，框架自动处理 思考→工具调用→观察 的 ReAct 循环
+使用 LangChain v1 的 create_agent + middleware
 """
 from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
-from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
-from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver
+from langchain.agents import create_agent
+from langchain.tools import tool
+from langchain.agents.middleware import before_model, AgentState
+from langchain_core.messages import AIMessage
+from langgraph.runtime import Runtime
+from typing import Any
 
 
 # ========== 1. 工具定义 ==========
@@ -36,12 +37,11 @@ def get_weather(city: str) -> str:
 
 @tool
 def search_knowledge(query: str) -> str:
-    """搜索知识库获取技术文档信息（RAG 简化版）"""
-    # 实际中这里接向量数据库检索，这里用简单匹配模拟
+    """搜索知识库获取技术文档信息"""
     knowledge = {
-        "docker": "Docker 常用命令：docker build 构建镜像，docker run 运行容器，docker-compose 编排多容器。数据持久化用 Volume。",
-        "git": "Git 撤销：git reset --soft HEAD~1 撤销提交保留更改，git stash 临时保存。SSH 配置：ssh-keygen -t ed25519 生成密钥。",
-        "python": "Python 技巧：列表推导式 [x**2 for x in range(10)]，字典合并 dict1 | dict2（3.9+），match-case 模式匹配（3.10+）。",
+        "docker": "Docker 常用命令：docker build 构建镜像，docker run 运行容器。数据持久化用 Volume。",
+        "git": "Git 撤销：git reset --soft HEAD~1 撤销提交保留更改，git stash 临时保存。",
+        "python": "Python 技巧：列表推导式 [x**2 for x in range(10)]，字典合并 dict1 | dict2（3.9+）。",
     }
     for key, value in knowledge.items():
         if key in query.lower():
@@ -49,60 +49,56 @@ def search_knowledge(query: str) -> str:
     return "知识库中未找到相关信息"
 
 
-# ========== 2. Guardrails（输入护栏） ==========
+
+# ========== 2. Guardrails（输入护栏，用 before_model middleware） ==========
 BLOCKED_TOPICS = ["政治", "赌博", "暴力"]
 
 
-def input_guardrail(user_input: str) -> str | None:
-    """检查用户输入，返回 None 表示通过，返回字符串表示拦截原因"""
+@before_model(can_jump_to=["end"])
+def input_guardrail(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    """在请求到达 LLM 之前检查输入，拦截敏感话题"""
+    last_message = state["messages"][-1]
+    content = last_message.content if hasattr(last_message, "content") else str(last_message)
+
     for topic in BLOCKED_TOPICS:
-        if topic in user_input:
-            return f"抱歉，我无法回答关于「{topic}」的问题。"
+        if topic in content:
+            return {
+                "messages": [AIMessage(content=f"🛡️ 抱歉，我无法回答关于「{topic}」的问题。")],
+                "jump_to": "end",
+            }
     return None
 
 
 # ========== 3. 构建 Agent ==========
-llm = ChatOpenAI(model="qwen-plus")
 tools = [get_current_date, get_weather, search_knowledge]
 
-# Memory：LangGraph 的 MemorySaver 自动管理对话历史
-memory = MemorySaver()
-
-agent = create_react_agent(
-    model=llm,
+agent = create_agent(
+    model="openai:qwen-plus",
     tools=tools,
-    checkpointer=memory,
-    prompt="你是一个技术助手，可以查询天气、日期和技术知识库。请用中文回答。",
+    system_prompt="你是一个技术助手，可以查询天气、日期和技术知识库。请用中文回答。",
+    middleware=[input_guardrail],
 )
 
 
 # ========== 4. 对话循环 ==========
 def chat():
-    # thread_id 标识一个对话，同一个 thread_id 共享记忆
-    config = {"configurable": {"thread_id": "user-001"}}
-
     print("【完整 Agent】集成 Tool + Memory + RAG + Guardrails")
     print("输入 quit 退出\n")
+
+    messages = []
 
     while True:
         user_input = input("你: ").strip()
         if user_input == "quit":
             break
 
-        # Guardrails 检查
-        blocked = input_guardrail(user_input)
-        if blocked:
-            print(f"🛡️ {blocked}\n")
-            continue
+        messages.append({"role": "user", "content": user_input})
 
-        # 调用 Agent
-        result = agent.invoke(
-            {"messages": [{"role": "user", "content": user_input}]},
-            config=config,
-        )
+        result = agent.invoke({"messages": messages})
 
-        # 输出结果
         reply = result["messages"][-1].content
+        messages = result["messages"]
+
         print(f"助手: {reply}\n")
 
 
