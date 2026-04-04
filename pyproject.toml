@@ -13,5 +13,6 @@ dependencies = [
     "mcp>=1.26.0",
     "numpy>=2.4.4",
     "python-dotenv>=1.0.0",
+    "faiss-cpu>=1.11.0",
     "sentence-transformers>=4.1.0",
 ]

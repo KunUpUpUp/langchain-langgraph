@@ -1,0 +1,14 @@
+[
+  {"id": 1, "text": "LangGraph 是一个用于构建有状态、多参与者 LLM 应用的框架，它扩展了 LangChain 的功能。"},
+  {"id": 2, "text": "LangGraph 的核心概念包括 State（状态）、Node（节点）和 Edge（边）。"},
+  {"id": 3, "text": "State 在 LangGraph 中是一个 TypedDict，定义了图中流转的数据结构。"},
+  {"id": 4, "text": "Node 是图中的处理单元，每个节点接收当前状态，处理后返回状态更新。"},
+  {"id": 5, "text": "Edge 连接节点，可以是普通边（固定从一个节点到另一个节点）或条件边（根据条件动态选择下一个节点）。"},
+  {"id": 6, "text": "add_messages 是 LangGraph 内置的 reducer 函数，用于合并消息列表，新消息会追加到列表而不是覆盖旧消息。"},
+  {"id": 7, "text": "ToolNode 是 LangGraph 预置的工具执行节点，它可以自动解析并执行 LLM 返回的工具调用请求。"},
+  {"id": 8, "text": "Python 的 typing 模块提供了 Annotated 类型，可以给类型附加额外的元数据（如 reducer），框架会读取这些元数据来改变行为。"},
+  {"id": 9, "text": "ChatOpenAI 是 LangChain 提供的 OpenAI 兼容接口，可以连接任何兼容 OpenAI API 的模型服务，比如阿里云通义千问。"},
+  {"id": 10, "text": "Sentence Transformers 是一个开源 Python 库，用于将句子和文本转换为向量嵌入（embeddings），支持多种预训练模型。"},
+  {"id": 11, "text": "RAG（Retrieval-Augmented Generation，检索增强生成）是一种将信息检索与大语言模型生成结合的技术，先检索相关文档，再让 LLM 基于文档回答问题。"},
+  {"id": 12, "text": "余弦相似度（Cosine Similarity）是衡量两个向量方向相似程度的指标，值域为 [-1, 1]，值越接近 1 表示越相似。"}
+]
